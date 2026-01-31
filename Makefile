@@ -1,7 +1,7 @@
 # compiler and flags
 CC := gcc
 CFLAGS := -Wall -Wextra -Werror -std=c11 -Iinclude
-CFLAGS += -DUNICODE -D_UNICODE
+CFLAGS += -DUNICODE -D_UNICODE -D_WIN32_WINNT=0x0A00
 LDFLAGS := -mwindows -municode -ld2d1 -luuid -lole32 -lgdi32 -luser32
 
 # directories
