@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "basewin.h"
 
 BOOL BaseWindow_Create(

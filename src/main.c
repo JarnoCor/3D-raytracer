@@ -1,6 +1,5 @@
-// #include <stdio.h>
-// #include <windows.h>
 #include "mainwin.h"
+#include <stdio.h>
 
 // LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -13,9 +12,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     MainWindow win;
     MainWindow_Init(&win);
 
-    if(!BaseWindow_CreateDefault(&win.base, L"Learn to Program Windows", WS_OVERLAPPEDWINDOW))
+    if(!BaseWindow_CreateDefault(&win.base, L"Circle", WS_OVERLAPPEDWINDOW))
     {
-        return 0;
+        DWORD err = GetLastError();
+        printf("CreateDefault failed, GetLastError=%lu\n", err);
+        return 1;
     }
 
     ShowWindow(Window(&win.base), nCmdShow);
@@ -25,6 +26,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    printf("Message loop exited, msg.message=%u msg.wParam=%lu\n", (unsigned)msg.message, (unsigned long)msg.wParam);
 
     return 0;
 }
