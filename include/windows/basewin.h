@@ -2,6 +2,7 @@
 #define BASEWIN_H
 
 #include <windows.h>
+#include "util.h"
 
 typedef struct BaseWindow BaseWindow;
 
@@ -42,7 +43,9 @@ BOOL BaseWindow_Create(
 BOOL BaseWindow_CreateDefault(
     BaseWindow *self,
     LPWSTR lpWindowName,
-    DWORD dwStyle
+    DWORD dwStyle,
+    int widht,
+    int height
 );
 
 // Base window procedure

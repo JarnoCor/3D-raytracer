@@ -26,3 +26,8 @@ float PixelsToDipsY(float y)
 {
     return (float) (y / g_DPIScale);
 }
+
+float dotProduct(Point3D a, Point3D b)
+{
+    return a.x*b.x + a.y*b.y + a.z*b.z;
+}

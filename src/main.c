@@ -1,4 +1,4 @@
-#include "mainwin.h"
+#include "windows/canvas.h"
 #include <stdio.h>
 
 // LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -9,17 +9,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     (void)hPrevInstance;
     (void)pCmdLine;
 
-    MainWindow win;
-    MainWindow_Init(&win);
+    Canvas *canvas = createCanvas(500, 500);
 
-    if(!BaseWindow_CreateDefault(&win.base, L"Circle", WS_OVERLAPPEDWINDOW))
+    if(!BaseWindow_CreateDefault(&canvas->base, L"Raytracing", WS_OVERLAPPEDWINDOW, 500, 500))
     {
         DWORD err = GetLastError();
         printf("CreateDefault failed, GetLastError=%lu\n", err);
         return 1;
     }
 
-    ShowWindow(Window(&win.base), nCmdShow);
+    ShowWindow(Window(&canvas->base), nCmdShow);
 
     MSG msg = {0};
     while (GetMessage(&msg, NULL, 0, 0) > 0) {

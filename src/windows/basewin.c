@@ -1,4 +1,4 @@
-#include "basewin.h"
+#include "windows/basewin.h"
 
 BOOL BaseWindow_Create(
     BaseWindow *self,
@@ -42,7 +42,9 @@ BOOL BaseWindow_Create(
 BOOL BaseWindow_CreateDefault(
     BaseWindow *self,
     LPWSTR lpWindowName,
-    DWORD dwStyle
+    DWORD dwStyle,
+    int width,
+    int height
 )
 {
     return BaseWindow_Create(
@@ -52,8 +54,8 @@ BOOL BaseWindow_CreateDefault(
         0,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        width,
+        height,
         0,
         0
     );

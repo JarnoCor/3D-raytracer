@@ -11,15 +11,21 @@ OBJ_DIR := build
 # files
 SRCS := \
 	$(SRC_DIR)/main.c \
-	$(SRC_DIR)/basewin.c \
-	$(SRC_DIR)/mainwin.c \
+	$(SRC_DIR)/windows/basewin.c \
+	$(SRC_DIR)/windows/mainwin.c \
+	$(SRC_DIR)/windows/canvas.c \
 	$(SRC_DIR)/util.c \
+	$(SRC_DIR)/scene.c \
+	$(SRC_DIR)/raytracer.c \
 
-OBJS := \
-	$(OBJ_DIR)/main.o \
-	$(OBJ_DIR)/basewin.o \
-	$(OBJ_DIR)/mainwin.o \
-	$(OBJ_DIR)/util.o \
+OBJS := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+# 	$(OBJ_DIR)/main.o \
+# 	$(OBJ_DIR)/basewin.o \
+# 	$(OBJ_DIR)/mainwin.o \
+# 	$(OBJ_DIR)/canvas.o \
+# 	$(OBJ_DIR)/util.o \
+# 	$(OBJ_DIR)/scene.o \
+# 	$(OBJ_DIR)/raytracer.o \
 
 TARGET := app.exe
 
@@ -32,7 +38,8 @@ $(TARGET): $(OBJS)
 
 # compile source files to object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
+# 	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # clean

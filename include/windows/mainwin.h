@@ -1,8 +1,7 @@
-#ifndef Main_WINDOW_H
-#define Main_WINDOW_H
+#ifndef MAIN_WIN_H
+#define MAIN_WIN_H
 
 #include "basewin.h"
-#include "util.h"
 #include <d2d1.h>
 // #pragma comment(lib, "d2d1")
 

@@ -1,4 +1,4 @@
-#include "mainwin.h"
+#include "windows/mainwin.h"
 #include <stdio.h>
 
 LPCWSTR MainWindow_ClassName()
@@ -18,13 +18,12 @@ static LRESULT MainWindow_HandleMessage(
     switch (uMsg)
     {
     case WM_CREATE:
-        // Defer heavy Direct2D factory creation to CreateGraphicsResources
-        // to avoid doing potentially blocking work during WM_CREATE.
-        if(FAILED(D2D1CreateFactory(
+    if(FAILED(D2D1CreateFactory(
         D2D1_FACTORY_TYPE_SINGLE_THREADED, &IID_ID2D1Factory, NULL, (void**)&self->factory)))
         {
             return -1; // Fail CreateWindowEx
         }
+        InitializeDPIScale(selfBase->m_hwnd);
         return 0;
 
     case WM_DESTROY:
@@ -61,16 +60,20 @@ void MainWindow_Init(MainWindow *self)
     self->factory = NULL;
     self->renderTarget = NULL;
     self->brush = NULL;
+}
 
-    // Create D2D factory early (before creating the window) to avoid doing
-    // potentially blocking work inside the window procedure.
-    // HRESULT hr = D2D1CreateFactory(
-    //     D2D1_FACTORY_TYPE_SINGLE_THREADED,
-    //     &IID_ID2D1Factory,
-    //     NULL,
-    //     (void**)&self->factory
-    // );
-    // (void)hr; // keep factory NULL on failure
+void debug_printf(const char* fmt, ...) {
+    char buffer[512];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    // Convert to wide string
+    wchar_t wbuffer[512];
+    MultiByteToWideChar(CP_UTF8, 0, buffer, -1, wbuffer, 512);
+
+    OutputDebugString(wbuffer);
 }
 
 void CalculateLayout(MainWindow *self)
@@ -80,8 +83,9 @@ void CalculateLayout(MainWindow *self)
         RECT rc;
         GetClientRect(((BaseWindow*)self)->m_hwnd, &rc);
         D2D1_SIZE_F size = (D2D1_SIZE_F) {rc.right, rc.bottom};
-        const float x = size.width / 2;
-        const float y = size.height / 2;
+
+        const float x = PixelsToDipsX(size.width) / 2;
+        const float y = PixelsToDipsY(size.height) / 2;
         const float radius = min(x, y);
         self->ellipse = (D2D1_ELLIPSE) {(D2D1_POINT_2F) {x, y}, radius, radius};
     }
