@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include "util.h"
+#include "light.h"
 #include <string.h>
 #include <stdint.h>
 
@@ -10,20 +11,24 @@ typedef struct Sphere
     float radius;
     Point3D center;
     uint32_t color;
+    float specular;
 } Sphere;
 
 typedef struct Viewport {
-    int width;
-    int height;
+    float width;
+    float height;
     float distance;
 } Viewport;
+
 typedef struct Scene
 {
     Viewport viewport;
     int sphere_count;
-    Sphere spheres[];
+    Sphere *spheres;
+    int light_count;
+    Light *lights;
 } Scene;
 
-Scene* initializeScene(int count, Sphere* sphere);
+Scene* initializeScene(Sphere[], int, Light[], int);
 
 #endif

@@ -6,13 +6,13 @@ Point3D canvasToViewport(Canvas* canvas, Viewport viewport, int x, int y)
     return (Point3D) { 1.0f*x*viewport.width/canvas->width, 1.0f*y*viewport.height/canvas->height, viewport.distance };
 }
 
-void intersectRaySphere(float* t1, float* t2, Point3D origin, Point3D viewport, Sphere sphere)
+void intersectRaySphere(float* t1, float* t2, Point3D starting_point, Vec3 direction, Sphere sphere)
 {
     float r = sphere.radius;
-    Point3D vector_origin_sphere = (Point3D) { origin.x - sphere.center.x, origin.y - sphere.center.y, origin.z - sphere.center.z };
+    Vec3 vector_origin_sphere = (Vec3) { starting_point.x - sphere.center.x, starting_point.y - sphere.center.y, starting_point.z - sphere.center.z };
 
-    float a = dotProduct(viewport, viewport);
-    float b = 2*dotProduct(vector_origin_sphere, viewport);
+    float a = dotProduct(direction, direction);
+    float b = 2*dotProduct(vector_origin_sphere, direction);
     float c = dotProduct(vector_origin_sphere, vector_origin_sphere) - r*r;
 
     float discriminant = b*b - 4*a*c;
@@ -26,46 +26,94 @@ void intersectRaySphere(float* t1, float* t2, Point3D origin, Point3D viewport, 
     *t2 = (-b - sqrtf(discriminant)) / (2*a);
 }
 
-uint32_t traceRay(Canvas* canvas, Point3D origin, Point3D viewport, float t_min, float t_max)
+float computeLighting(Canvas* canvas, Point3D point, Vec3 normal, Vec3 viewport, float specular)
 {
-    float closest_t = INFINITY;
-    Sphere *closest_sphere = 0;
 
+    float intensity = 0.0f;
+
+    for (int i = 0; i < canvas->scene->light_count; i++)
+    {
+        Light *current_light = &canvas->scene->lights[i];
+
+        if (current_light->type == LIGHT_AMBIENT)
+        {
+            intensity += current_light->intensity;
+        } else
+        {
+            Vec3 l;
+            if (current_light->type == LIGHT_POINT)
+            {
+                l = (Vec3) { current_light->data.point.position.x - point.x, current_light->data.point.position.y - point.y, current_light->data.point.position.z - point.z };
+            } else
+            {
+                l = current_light->data.directional.direction;
+            }
+
+            // diffuse
+            float n_dot_l = dotProduct(normal, l);
+            if (n_dot_l > 0)
+            {
+                intensity += current_light->intensity * n_dot_l/(lengthVector(normal) * lengthVector(l));
+            }
+
+            // specular
+            if (specular != -1)
+            {
+                Vec3 r = (Vec3) { 2 * normal.x * n_dot_l - l.x, 2 * normal.y * n_dot_l - l.y, 2 * normal.z * n_dot_l - l.z };
+                float r_dot_v = dotProduct(r, viewport);
+                if (r_dot_v > 0)
+                {
+                    intensity += current_light->intensity * powf(r_dot_v/(lengthVector(r)*lengthVector(viewport)), specular);
+                }
+            }
+        }
+    }
+
+    return intensity;
+}
+
+void closestIntersection(Sphere** closest_sphere, float* closest_t, Canvas* canvas, Point3D starting_point, Vec3 direction, float t_min, float t_max)
+{
     float t1, t2 = 0;
     for (int i = 0; i < canvas->scene->sphere_count; i++)
     {
         Sphere *current_sphere = &canvas->scene->spheres[i];
-        intersectRaySphere(&t1, &t2, origin, viewport, *current_sphere);
+        intersectRaySphere(&t1, &t2, starting_point, direction, *current_sphere);
 
-        if (t1 >= t_min && t1 <= t_max && t1 < closest_t)
+        if (t1 >= t_min && t1 <= t_max && t1 < *closest_t)
         {
-            closest_t = t1;
-            closest_sphere = current_sphere;
+            *closest_t = t1;
+            *closest_sphere = current_sphere;
         }
-        if (t2 >= t_min && t2 <= t_max && t2 < closest_t)
+        if (t2 >= t_min && t2 <= t_max && t2 < *closest_t)
         {
-            closest_t = t2;
-            closest_sphere = current_sphere;
+            *closest_t = t2;
+            *closest_sphere = current_sphere;
         }
     }
+}
+
+uint32_t traceRay(Canvas* canvas, Point3D starting_point, Vec3 direction, float t_min, float t_max)
+{
+    float closest_t = INFINITY;
+    Sphere *closest_sphere = 0;
+
+    closestIntersection(&closest_sphere, &closest_t, canvas, starting_point, direction, t_min, t_max);
 
     if (!closest_sphere)
     {
         return canvas->background_color;
     }
 
-    char buffer[256];
-    wchar_t wbuffer[256];
+    Point3D point = { starting_point.x + closest_t * direction.x, starting_point.y + closest_t * direction.y, starting_point.z + closest_t * direction.z };
+    Vec3 normal = (Vec3) { point.x - closest_sphere->center.x, point.y - closest_sphere->center.y, point.z - closest_sphere->center.z };
 
-    sprintf(buffer, "X position: %.6f", closest_sphere->center.x);
+    normalizeVector(&normal);
+    float intensity = computeLighting(canvas, point, normal, (Vec3) { -direction.x, -direction.y, -direction.z } , closest_sphere->specular);
 
-    // Converteer char buffer naar wchar_t buffer
-    mbstowcs(wbuffer, buffer, sizeof(wbuffer) / sizeof(wchar_t));
+    return colorMultiply(closest_sphere->color, intensity);
 
-    // Gebruik de Unicode-versie
-    OutputDebugStringW(wbuffer);
-
-    return closest_sphere->color;
+    // return COLOR_ARGB(ALPHA(closest_sphere->color), red, green, blue);
 }
 
 void render(Canvas* canvas)

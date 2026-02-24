@@ -17,6 +17,7 @@ SRCS := \
 	$(SRC_DIR)/util.c \
 	$(SRC_DIR)/scene.c \
 	$(SRC_DIR)/raytracer.c \
+# 	$(SRC_DIR)/light.c \
 
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 # 	$(OBJ_DIR)/main.o \

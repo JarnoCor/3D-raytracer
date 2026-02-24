@@ -14,6 +14,10 @@ void resizeCanvas(Canvas *canvas, int width, int height)
 
     canvas->bmi.bmiHeader.biWidth = width;
     canvas->bmi.bmiHeader.biHeight = -height; // negative for top-down bitmap (origin in top-left corner)
+
+    float canvasAspect = (float) canvas->width / canvas->height;
+
+    canvas->scene->viewport.width = canvasAspect;
 }
 
 void destroyCanvas(Canvas *canvas)
@@ -143,18 +147,42 @@ Canvas* createCanvas(int width, int height)
     canvas->bmi.bmiHeader.biBitCount = 32; // RGB
     canvas->bmi.bmiHeader.biCompression = BI_RGB;
 
-    Sphere spheres[3];
+    Sphere spheres[4];
 
     uint32_t red = COLOR_ARGB(255, 255, 0, 0);
     uint32_t green = COLOR_ARGB(255, 0, 255, 0);
     uint32_t blue = COLOR_ARGB(255, 0, 0, 255);
-    spheres[0] = (Sphere) { 1, (Point3D) { 0, -1, 3 }, red };
-    spheres[1] = (Sphere) { 1, (Point3D) { 2, 0, 4 }, blue };
-    spheres[2] = (Sphere) { 1, (Point3D) { -2, 0, 4 }, green };
+    spheres[0] = (Sphere) { 1, (Point3D) { 0, -1, 3 }, red, 500 };
+    spheres[1] = (Sphere) { 1, (Point3D) { 2, 0, 4 }, blue, 500 };
+    spheres[2] = (Sphere) { 1, (Point3D) { -2, 0, 4 }, green, 10 };
+    spheres[3] = (Sphere) { 5000, (Point3D) { 0, -5001, 0 }, COLOR_ARGB(255, 255, 255, 0), 1000 };
 
-    canvas->scene = initializeScene(3, spheres);
+    Light lights[3];
 
-    canvas->background_color = 0xFFFFFFFF; //(((uint8_t)255) << 24) | (((uint8_t)255) << 16) | (((uint8_t)255) << 8) | ((uint8_t)255);
+    Light ambient = {
+        .type = LIGHT_AMBIENT,
+        .intensity = 0.2f
+    };
+
+    Light point = {
+        .type = LIGHT_POINT,
+        .intensity = 0.6f,
+        .data.point.position = (Point3D) { 2, 1, 0 }
+    };
+
+    Light directional = {
+        .type = LIGHT_DIRECTIONAL,
+        .intensity = 0.2f,
+        .data.directional.direction = (Vec3) { 1, 4, 4 }
+    };
+
+    lights[0] = ambient;
+    lights[1] = point;
+    lights[2] = directional;
+
+    canvas->scene = initializeScene(spheres, 4, lights, 3);
+
+    canvas->background_color = COLOR_ARGB(255, 0, 0, 0);
 
     return canvas;
 }
