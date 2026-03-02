@@ -12,7 +12,16 @@ typedef struct Sphere
     Point3D center;
     uint32_t color;
     float specular;
+    float reflective;
+    float transparancy;
+    float ior;
 } Sphere;
+
+typedef struct Camera
+{
+    Point3D position;
+    Vec3 rotation;
+} Camera;
 
 typedef struct Viewport {
     float width;

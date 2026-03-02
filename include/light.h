@@ -19,6 +19,7 @@ typedef struct Light
         struct
         {
             Point3D position;
+            float range;
         } point;
 
         struct

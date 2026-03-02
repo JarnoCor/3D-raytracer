@@ -8,6 +8,6 @@ typedef struct Canvas Canvas;
 
 void render(Canvas* canvas);
 
-uint32_t traceRay(Canvas* canvas, Point3D camera, Point3D viewport, float t_min, float t_max);
+uint32_t traceRay(Canvas* canvas, Point3D camera, Vec3 direction, float t_min, float t_max, int recursion_depth, Stack *refraction_indexes);
 
 #endif

@@ -8,12 +8,16 @@
 // #include <winuser.h>
 
 #define COLOR_ARGB(a, r, g, b) (((a)&0xFF) << 24 | ((r)&0xFF) << 16 | ((g)&0xFF) << 8 | ((b)&0xFF))
-#define ALPHA(color) ((color >> 24)&0xFF)
-#define RED(color) ((color >> 16)&0xFF)
-#define GREEN(color) ((color >> 8)&0xFF)
-#define BLUE(color) (color&0xFF)
+#define ALPHA(color) (((color) >> 24)&0xFF)
+#define RED(color) (((color) >> 16)&0xFF)
+#define GREEN(color) (((color) >> 8)&0xFF)
+#define BLUE(color) ((color)&0xFF)
+
+#define STACK_SIZE 100
 
 uint32_t colorMultiply(uint32_t, float);
+
+uint32_t colorAdd(uint32_t, uint32_t);
 
 void SafeRelease(IUnknown**);
 
@@ -46,5 +50,18 @@ float dotProduct(Vec3, Vec3);
 float lengthVector(Vec3);
 
 void normalizeVector(Vec3*);
+
+typedef struct Stack {
+    int head;
+    float values[STACK_SIZE];
+} Stack;
+
+void push(Stack*, float);
+
+float pop(Stack*);
+
+float getHead(Stack*);
+
+void initializeStack(Stack*);
 
 #endif

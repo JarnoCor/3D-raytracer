@@ -15,6 +15,21 @@ uint32_t colorMultiply(uint32_t color, float intensity)
     return COLOR_ARGB(alpha, red, green, blue);
 }
 
+uint32_t colorAdd(uint32_t color1, uint32_t color2)
+{
+    int alpha_int = ALPHA(color1) + ALPHA(color2);
+    int red_int = RED(color1) + RED(color2);
+    int green_int = GREEN(color1) + GREEN(color2);
+    int blue_int = BLUE(color1) + BLUE(color2);
+
+    uint8_t alpha = min(alpha_int, 255);
+    uint8_t red = min(red_int, 255);
+    uint8_t green = min(green_int, 255);
+    uint8_t blue = min(blue_int, 255);
+
+    return COLOR_ARGB(alpha, red, green, blue);
+}
+
 void SafeRelease(IUnknown **pointer)
 {
     if (*pointer)
@@ -59,4 +74,28 @@ void normalizeVector(Vec3 *vector)
     vector->x = vector->x / length;
     vector->y = vector->y / length;
     vector->z = vector->z / length;
+}
+
+void push(Stack *stack, float value)
+{
+    if (stack->head < STACK_SIZE)
+    {
+        stack->values[stack->head] = value;
+        stack->head++;
+    }
+}
+
+float pop(Stack *stack)
+{
+    return stack->values[--stack->head];
+}
+
+float getHead(Stack *stack)
+{
+    return stack->values[stack->head-1];
+}
+
+void initializeStack(Stack *stack)
+{
+    stack->head = 0;
 }
