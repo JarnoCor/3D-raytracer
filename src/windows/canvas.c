@@ -153,9 +153,9 @@ Canvas* createCanvas(int width, int height)
     uint32_t green = COLOR_ARGB(255, 0, 255, 0);
     uint32_t blue = COLOR_ARGB(255, 0, 0, 255);
     uint32_t white = COLOR_ARGB(255, 255, 255, 255);
-    spheres[0] = (Sphere) { 1, (Point3D) { 0, -0.5, 3 }, white, 500, 0.0f, 0.7f, 1.01f };
-    spheres[1] = (Sphere) { 1, (Point3D) { 2, 0, 4 }, blue, 500, 0.3f, 0, 1 };
-    spheres[2] = (Sphere) { 1, (Point3D) { -2, 0, 4 }, green, 10, 0.4f, 0, 1 };
+    spheres[0] = (Sphere) { 1, (Point3D) { 0, -0.5, 3.5 }, white, 500, 1.0f, 0.9f, 1.001f };
+    spheres[1] = (Sphere) { 1, (Point3D) { 2, 0, 4 }, blue, 500, 0.1f, 0, 1 };
+    spheres[2] = (Sphere) { 1, (Point3D) { -2, 0, 4 }, green, 10, 0.6f, 0, 1 };
     spheres[3] = (Sphere) { 5000, (Point3D) { 0, -5001, 0 }, COLOR_ARGB(255, 255, 255, 0), 1000, 0.0f, 0, 1 };
 
     Light lights[3];
@@ -169,12 +169,12 @@ Canvas* createCanvas(int width, int height)
         .type = LIGHT_POINT,
         .intensity = 0.6f,
         .data.point.position = (Point3D) { 2, 1, 0 },
-        .data.point.range = 0.5
+        .data.point.range = 0.25
     };
 
     Light directional = {
         .type = LIGHT_DIRECTIONAL,
-        .intensity = 0.2f,
+        .intensity = 0.5f,
         .data.directional.direction = (Vec3) { 1, 4, 4 }
     };
 
@@ -184,7 +184,7 @@ Canvas* createCanvas(int width, int height)
 
     canvas->scene = initializeScene(spheres, 4, lights, 3);
 
-    canvas->background_color = COLOR_ARGB(255, 0, 0, 0);
+    canvas->background_color = COLOR_ARGB(255, 255, 255, 255);
 
     return canvas;
 }
