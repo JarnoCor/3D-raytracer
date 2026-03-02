@@ -169,12 +169,12 @@ Canvas* createCanvas(int width, int height)
         .type = LIGHT_POINT,
         .intensity = 0.6f,
         .data.point.position = (Point3D) { 2, 1, 0 },
-        .data.point.range = 0.5
+        .data.point.range = 0.25
     };
 
     Light directional = {
         .type = LIGHT_DIRECTIONAL,
-        .intensity = 0.2f,
+        .intensity = 0.5f,
         .data.directional.direction = (Vec3) { 1, 4, 4 }
     };
 
