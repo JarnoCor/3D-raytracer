@@ -1,7 +1,7 @@
 #include "raytracer.h"
 #include <stdio.h>
 
-Point3D canvasToViewport(Canvas* canvas, Viewport viewport, int x, int y)
+Point3D canvasToViewport(Canvas* canvas, Viewport viewport, float x, float y)
 {
     return (Point3D) { 1.0f*x*viewport.width/canvas->width, 1.0f*y*viewport.height/canvas->height, viewport.distance };
 }
@@ -68,7 +68,7 @@ float collectShadow(Canvas* canvas, Point3D point, Vec3 light_direction, float t
 
         if (t1 >= t_min && t1 < t_max)
         {
-            light_amount *= sphere->transparancy * 1.25f;
+            light_amount *= sphere->transparancy * 1.0f;
             if (light_amount <= 0.0f)
             {
                 return 1.0f;
@@ -77,7 +77,7 @@ float collectShadow(Canvas* canvas, Point3D point, Vec3 light_direction, float t
 
         if (t2 >= t_min && t2 < t_max)
         {
-            light_amount *= sphere->transparancy  * 1.25f;
+            light_amount *= sphere->transparancy  * 1.0f;
             if (light_amount <= 0.0f)
             {
                 return 1.0f;
@@ -147,6 +147,12 @@ float computeLighting(Canvas* canvas, Point3D point, Vec3 normal, Vec3 viewport,
 
 uint32_t traceRay(Canvas* canvas, Point3D starting_point, Vec3 direction, float t_min, float t_max, int recursion_depth, Stack *refraction_indexes)
 {
+
+    if (recursion_depth <= 0)
+    {
+        return canvas->background_color;
+    }
+
     float closest_t;
     Sphere *closest_sphere;
 
@@ -156,6 +162,9 @@ uint32_t traceRay(Canvas* canvas, Point3D starting_point, Vec3 direction, float 
     {
         return canvas->background_color;
     }
+
+    uint32_t reflected_color = 0;
+    uint32_t transparent_color = 0;
 
     // compute local color
     Point3D point = { starting_point.x + closest_t * direction.x, starting_point.y + closest_t * direction.y, starting_point.z + closest_t * direction.z };
@@ -172,10 +181,13 @@ uint32_t traceRay(Canvas* canvas, Point3D starting_point, Vec3 direction, float 
     {
         // compute the reflected color
         Vec3 ray = reflectRay((Vec3) { -direction.x, -direction.y, -direction.z }, normal);
-        uint32_t reflected_color = traceRay(canvas, point, ray, 0.001, INFINITY, recursion_depth - 1, refraction_indexes);
 
-        computed_color = colorAdd(colorMultiply(computed_color, 1-reflection), colorMultiply(reflected_color, reflection));
+        reflected_color = traceRay(canvas, point, ray, 0.0001, INFINITY, recursion_depth - 1, refraction_indexes);
+
+        // computed_color = colorAdd(colorMultiply(computed_color, 1-reflection), colorMultiply(reflected_color, reflection));
     }
+
+    float fresnel = 1.0f;
 
     float transparancy = closest_sphere->transparancy;
     if (transparancy > 0)
@@ -212,13 +224,70 @@ uint32_t traceRay(Canvas* canvas, Point3D starting_point, Vec3 direction, float 
 
             normalizeVector(&new_direction);
 
-            uint32_t transparent_color = traceRay(canvas, point, new_direction, 0.001, INFINITY, recursion_depth, refraction_indexes);
 
-            computed_color = colorAdd(colorMultiply(computed_color, 1-transparancy), colorMultiply(transparent_color, transparancy));
+            transparent_color = traceRay(canvas, point, new_direction, 0.0001, INFINITY, recursion_depth - 1, refraction_indexes);
+
+            float r0 = (n1 - n2) / (n1 + n2);
+            r0 = r0*r0;
+
+            fresnel = r0 + (1-r0) * powf(1.0f - cos_i, 5.0f);
+
+            // computed_color = colorAdd(colorMultiply(computed_color, 1-transparancy), colorMultiply(transparent_color, transparancy));
+
+            // uint32_t temp_color = colorAdd(colorMultiply(reflected_color, fresnel), colorMultiply(transparent_color, transparancy*(1.0f-fresnel)));
+            // return colorAdd(colorMultiply(computed_color, 1.0f-transparancy), temp_color);
         }
     }
 
-    return computed_color;
+    uint32_t result = 0;
+
+    result = colorAdd(result, colorMultiply(computed_color, (1.0f-transparancy)));
+
+    result = colorAdd(result, colorMultiply(reflected_color, reflection*fresnel));
+
+    result = colorAdd(result, colorMultiply(transparent_color, transparancy*(1.0f-fresnel)));
+
+    // return colorAdd(colorMultiply(computed_color, 1.0f-reflection), colorMultiply(reflected_color, reflection));
+    return result;
+}
+
+uint32_t oversample(Canvas *canvas, Point3D origin, int x, int y)
+{
+    uint32_t color = 0;
+
+    int samples = 3;
+    float inv_samples = 1.0f / (samples*samples);
+
+    float red = 0, green = 0, blue = 0;
+
+    for (int sx = 0; sx < samples; sx++)
+    {
+        for (int sy = 0; sy < samples; sy++)
+        {
+            float offset_x = (sx + 0.5f) / samples;
+            float offset_y = (sy + 0.5f) / samples;
+
+            float sample_x = x + offset_x;
+            float sample_y = y - offset_y;
+
+            Vec3 view_direction = canvasToViewport(canvas, canvas->scene->viewport, sample_x, sample_y);
+
+            Stack refraction_indexes;
+            initializeStack(&refraction_indexes);
+            push(&refraction_indexes, 1.0f);
+            color = traceRay(canvas, origin, view_direction, 1, INFINITY, 3, &refraction_indexes);
+
+            red += RED(color);
+            green += GREEN(color);
+            blue += BLUE(color);
+        }
+    }
+
+    red *= inv_samples;
+    green *= inv_samples;
+    blue *= inv_samples;
+
+    return (uint32_t) COLOR_ARGB(ALPHA(color), (uint32_t) red, (uint32_t) green, (uint32_t) blue);
 }
 
 void render(Canvas* canvas)
@@ -229,11 +298,7 @@ void render(Canvas* canvas)
     {
         for (int y = canvas->height/2; y > -canvas->height/2; y--)
         {
-            Point3D view_direction = canvasToViewport(canvas, canvas->scene->viewport, x, y);
-            Stack refraction_indexes;
-            initializeStack(&refraction_indexes);
-            push(&refraction_indexes, 1.0f);
-            uint32_t color = traceRay(canvas, origin, view_direction, 1, INFINITY, 3, &refraction_indexes);
+            uint32_t color = oversample(canvas, origin, x, y);
             setPixel(canvas, x, y, color);
         }
     }

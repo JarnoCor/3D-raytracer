@@ -150,13 +150,13 @@ Canvas* createCanvas(int width, int height)
     Sphere spheres[4];
 
     // uint32_t red = COLOR_ARGB(255, 255, 0, 0);
-    uint32_t green = COLOR_ARGB(255, 0, 255, 0);
-    uint32_t blue = COLOR_ARGB(255, 0, 0, 255);
+    uint32_t green = COLOR_ARGB(255, 100, 231, 100);
+    uint32_t blue = COLOR_ARGB(255, 50, 50, 255);
     uint32_t white = COLOR_ARGB(255, 255, 255, 255);
-    spheres[0] = (Sphere) { 1, (Point3D) { 0, -0.5, 3 }, white, 500, 0.0f, 0.7f, 1.01f };
-    spheres[1] = (Sphere) { 1, (Point3D) { 2, 0, 4 }, blue, 500, 0.3f, 0, 1 };
-    spheres[2] = (Sphere) { 1, (Point3D) { -2, 0, 4 }, green, 10, 0.4f, 0, 1 };
-    spheres[3] = (Sphere) { 5000, (Point3D) { 0, -5001, 0 }, COLOR_ARGB(255, 255, 255, 0), 1000, 0.0f, 0, 1 };
+    spheres[0] = (Sphere) { 1.1, (Point3D) { 0, -0.7, 4.5 }, white, 1000, 1.0f, 0.9f, 1.007f };
+    spheres[1] = (Sphere) { 1, (Point3D) { 1.25, -1, 6.3 }, blue, 500, 0.2f, 0, 1 };
+    spheres[2] = (Sphere) { 1, (Point3D) { -1.9, -1, 5.5 }, green, 10, 0.1f, 0, 1 };
+    spheres[3] = (Sphere) { 5000, (Point3D) { 0, -5002, 0 }, COLOR_ARGB(255, 255, 128, 0), 1000, 0.0f, 0, 1 };
 
     Light lights[3];
 
@@ -184,7 +184,7 @@ Canvas* createCanvas(int width, int height)
 
     canvas->scene = initializeScene(spheres, 4, lights, 3);
 
-    canvas->background_color = COLOR_ARGB(255, 0, 0, 0);
+    canvas->background_color = COLOR_ARGB(255, 255, 255, 255);
 
     return canvas;
 }
