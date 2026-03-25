@@ -38,7 +38,7 @@ Since no extra graphics API was used, everything is ran on the CPU. This can mak
 
 This project is not cross-platform and Windows-only.
 
-To run the raytracer, you can either downlaod and run the ex-file found [here](https://github.com/JarnoCor/3D-raytracer/releases), or follow these steps:
+To run the raytracer, you can either download and run the exe-file found [here](https://github.com/JarnoCor/3D-raytracer/releases), or follow these steps:
 
 1. Install any C compiler (like [GCC](https://gcc.gnu.org))
 2. Install [Make](https://www.gnu.org/software/make/)
